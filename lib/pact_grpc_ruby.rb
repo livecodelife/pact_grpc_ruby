@@ -22,7 +22,7 @@ module PactGrpcRuby
       json_request = request.to_json
   
       # Construct the HTTP request to send to Pact
-      http_request = Net::HTTP::Post.new("/pact/#{method.split('/').last}")
+      http_request = Net::HTTP::Post.new("/pact/#{method.split('/').last.gsub(/([a-z])([A-Z])/, '\1_\2').downcase}")
       http_request.body = json_request
       http_request['Content-Type'] = 'application/json'
 
