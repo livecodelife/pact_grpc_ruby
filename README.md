@@ -1,24 +1,74 @@
-# PactGrpcRuby
+# Pact gRPC Ruby
 
-TODO: Delete this and the text below, and describe your gem
+## Description
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/pact_grpc_ruby`. To experiment with that code, run `bin/console` for an interactive prompt.
+Pact gRPC Ruby is a Ruby gem that facilitates contract testing between Ruby-based gRPC services using Pact. It allows developers to create and verify contracts between services, ensuring reliable communication in microservices architectures.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Add this line to your application's Gemfile:
 
-Install the gem and add to the application's Gemfile by executing:
+```ruby
+gem 'pact_grpc_ruby'
+```
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+And then run:
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+```bash
+$ bundle install
+```
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+Or install it yourself with:
+
+```bash
+$ gem install pact_grpc_ruby
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+### Consumer Side
+
+To use the interceptor in your gRPC client, you can add the interceptor to the client's channel:
+
+```ruby
+require 'pact_grpc_ruby'
+
+class MyGrpcClient
+  def initialize(pact_port)
+    @stub = MyGrpcService::Stub.new(
+      'localhost:50051',
+      :this_channel_is_insecure,
+      interceptors: [PactGrpcRuby::PactGrpcInterceptor.new(pact_port)]
+    )
+  end
+
+  def make_request
+    request = MyRequest.new(name: 'World')
+    response = @stub.example_method(request)
+    puts response.message
+  end
+end
+
+```
+
+### Provider Side
+
+To set up the middleware in your gRPC server:
+
+```ruby
+require 'pact_grpc_ruby'
+
+class MyApp
+  def initialize
+    @grpc_service_stub = MyGrpcService::Stub.new('localhost:50051', :this_channel_is_insecure)
+    @middleware = PactGrpcRuby::PactGrpcMiddleware.new(@grpc_service_stub)
+  end
+
+  def call(env)
+    @middleware.call(env)
+  end
+end
+```
 
 ## Development
 
