@@ -1,0 +1,76 @@
+PATH
+  remote: .
+  specs:
+    pact_grpc_ruby (0.1.0)
+      google-protobuf
+      grpc
+      rack
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ast (2.4.2)
+    bigdecimal (3.1.9)
+    diff-lcs (1.6.0)
+    google-protobuf (4.29.3-arm64-darwin)
+      bigdecimal
+      rake (>= 13)
+    googleapis-common-protos-types (1.18.0)
+      google-protobuf (>= 3.18, < 5.a)
+    grpc (1.70.1-arm64-darwin)
+      google-protobuf (>= 3.25, < 5.0)
+      googleapis-common-protos-types (~> 1.0)
+    json (2.10.1)
+    language_server-protocol (3.17.0.4)
+    lint_roller (1.1.0)
+    parallel (1.26.3)
+    parser (3.3.7.1)
+      ast (~> 2.4.1)
+      racc
+    racc (1.8.1)
+    rack (3.1.10)
+    rainbow (3.1.1)
+    rake (13.2.1)
+    regexp_parser (2.10.0)
+    rspec (3.13.0)
+      rspec-core (~> 3.13.0)
+      rspec-expectations (~> 3.13.0)
+      rspec-mocks (~> 3.13.0)
+    rspec-core (3.13.3)
+      rspec-support (~> 3.13.0)
+    rspec-expectations (3.13.3)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-mocks (3.13.2)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-support (3.13.2)
+    rubocop (1.72.2)
+      json (~> 2.3)
+      language_server-protocol (~> 3.17.0.2)
+      lint_roller (~> 1.1.0)
+      parallel (~> 1.10)
+      parser (>= 3.3.0.2)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 2.9.3, < 3.0)
+      rubocop-ast (>= 1.38.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 2.4.0, < 4.0)
+    rubocop-ast (1.38.0)
+      parser (>= 3.3.1.0)
+    ruby-progressbar (1.13.0)
+    unicode-display_width (3.1.4)
+      unicode-emoji (~> 4.0, >= 4.0.4)
+    unicode-emoji (4.0.4)
+
+PLATFORMS
+  arm64-darwin-23
+
+DEPENDENCIES
+  pact_grpc_ruby!
+  rake (~> 13.0)
+  rspec (~> 3.0)
+  rubocop (~> 1.21)
+
+BUNDLED WITH
+   2.4.22
