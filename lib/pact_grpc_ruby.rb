@@ -20,7 +20,7 @@ module PactGrpcRuby
       server.run_till_terminated_or_interrupted
     end
     {
-      client: service::Service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
+      client: service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
       server: server
     }
   end
