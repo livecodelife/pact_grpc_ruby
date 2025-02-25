@@ -36,7 +36,7 @@ module PactGrpcRuby
       # Construct the HTTP request to send to Pact
       http_request = Net::HTTP::Post.new("/pact/#{method.split("/").last.gsub(/([a-z])([A-Z])/, '\1_\2').downcase}")
       http_request.body = json_request
-      http_request["Content-Type"] = "application/json"
+      http_request["Accept"] = "application/json"
 
       # Send the HTTP request to the Pact server using the dynamic port
       LOGGER.info("Request body: #{http_request.body}")
