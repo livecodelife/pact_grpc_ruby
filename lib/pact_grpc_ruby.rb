@@ -12,22 +12,8 @@ module PactGrpcRuby
   LOGGER = Logger.new(STDOUT)
   LOGGER.level = Logger::INFO
 
-  def self.mock_server(service, url = 'localhost:50051', pact_port = 1234)
-    server = GRPC::RpcServer.new
-    server.add_http2_port(url, :this_port_is_insecure)
-    server.handle(service::Service)
-    Thread.new do
-      begin
-        server.run_till_terminated_or_interrupted(["EXIT", "TERM", "INT"])
-      rescue StandardError => e
-        LOGGER.error("Error processing request: #{e.message}")
-        server.handle_error(e.message, 500)
-      end
-    end
-    Struct.new(:client, :server).new(
-      service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
-      server
-    )
+  def self.mock_client(service, url = 'localhost:50051', pact_port = 1234)
+    service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
   end
 
   class PactGrpcInterceptor < GRPC::ClientInterceptor
@@ -52,9 +38,6 @@ module PactGrpcRuby
   
       # Log the response code
       LOGGER.info("Pact interaction sent: #{response.code}")
-  
-      # Yield to continue the gRPC call
-      yield if block_given?
     rescue StandardError => e
       LOGGER.error("Error sending Pact interaction: #{e.message}")
       raise
