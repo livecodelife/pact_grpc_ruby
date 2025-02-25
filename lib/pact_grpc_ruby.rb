@@ -19,10 +19,9 @@ module PactGrpcRuby
   class PactGrpcInterceptor < GRPC::ClientInterceptor
     def initialize(pact_port)
       @pact_port = pact_port
-      super()
     end
 
-    def request_response(request:, method:)
+    def request_response(request:, call:, method:, metadata:)
       # Convert the gRPC request to JSON
       json_request = request.to_json
 

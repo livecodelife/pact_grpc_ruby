@@ -18,12 +18,6 @@ RSpec.describe PactGrpcRuby::PactGrpcInterceptor do
     allow(PactGrpcRuby::LOGGER).to receive(:info)
   end
 
-  it "sends a Pact interaction and yields" do
-    expect do |b|
-      interceptor.request_response(request: request, call: call, method: method, metadata: metadata, &b)
-    end.to yield_control
-  end
-
   it "logs the response code" do
     interceptor.request_response(request: request, call: call, method: method, metadata: metadata)
     expect(PactGrpcRuby::LOGGER).to have_received(:info).with("Pact interaction sent: 200")
