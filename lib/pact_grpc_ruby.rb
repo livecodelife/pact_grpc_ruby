@@ -15,7 +15,7 @@ module PactGrpcRuby
   def self.mock_client(service, url = "localhost:50051", pact_port = 1234)
     server = GRPC::RpcServer.new
     server.add_http2_port(url, :this_port_is_insecure)
-    server.handle(service)
+    server.handle(service::Service)
     LOGGER.info("gRPC server started on #{url}")
     server.run_till_terminated
 
