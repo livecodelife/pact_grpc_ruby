@@ -17,8 +17,12 @@ module PactGrpcRuby
     server.add_http2_port(url, :this_port_is_insecure)
     server.handle(service::Service)
     Thread.new do
-      server.run_till_terminated_or_interrupted(["EXIT", "TERM", "INT"])
-    end
+      begin
+        server.run_till_terminated_or_interrupted(["EXIT", "TERM", "INT"])
+      rescue StandardError => e
+        LOGGER.error("Error processing request: #{e.message}")
+        server.handle_error(e.message, 500)
+      end
     Struct.new(:client, :server).new(
       service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
       server
