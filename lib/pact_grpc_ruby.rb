@@ -19,10 +19,10 @@ module PactGrpcRuby
     Thread.new do
       server.run_till_terminated_or_interrupted(["EXIT", "TERM", "INT"])
     end
-    {
-      client: service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
-      server: server
-    }
+    Struct.new(:client, :server).new(
+      service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
+      server
+    )
   end
 
   class PactGrpcInterceptor < GRPC::ClientInterceptor
