@@ -23,6 +23,7 @@ module PactGrpcRuby
         LOGGER.error("Error processing request: #{e.message}")
         server.handle_error(e.message, 500)
       end
+    end
     Struct.new(:client, :server).new(
       service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
       server
