@@ -9,6 +9,8 @@ require 'json'
 require_relative "pact_grpc_ruby/version"
 
 module PactGrpcRuby
+  include GRPC::GenericService
+
   LOGGER = Logger.new(STDOUT)
   LOGGER.level = Logger::INFO
 
