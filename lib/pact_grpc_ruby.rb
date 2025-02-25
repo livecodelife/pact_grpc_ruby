@@ -13,14 +13,6 @@ module PactGrpcRuby
   LOGGER.level = Logger::INFO
 
   def self.mock_client(service, url = "localhost:50051", pact_port = 1234)
-    server = GRPC::RpcServer.new
-    server.add_http2_port(url, :this_port_is_insecure)
-    server.handle(service::Service)
-    Thread.new do
-      LOGGER.info("gRPC server started on #{url}")
-      server.run_till_terminated_or_interrupted(["TERM", "INT", "EXIT"])
-    end
-
     service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)])
   end
 
@@ -31,21 +23,19 @@ module PactGrpcRuby
 
     def request_response(request:, call:, method:, metadata:)
       # Convert the gRPC request to JSON
-      json_request = request.to_json
+      json_request = request.to_h.to_json
 
       # Construct the HTTP request to send to Pact
       http_request = Net::HTTP::Post.new("/pact/#{method.split("/").last.gsub(/([a-z])([A-Z])/, '\1_\2').downcase}")
       http_request.body = json_request
       http_request["Accept"] = "application/json"
+      http_request["Content-Type"] = "application/json"
 
       # Send the HTTP request to the Pact server using the dynamic port
-      LOGGER.info("Request body: #{http_request.body}")
       response = Net::HTTP.start("localhost", @pact_port) do |http|
         http.request(http_request)
       end
 
-      # Log the response code
-      LOGGER.info("Pact interaction sent: #{response.code}")
     rescue StandardError => e
       LOGGER.error("Error sending Pact interaction: #{e.message}")
       raise
