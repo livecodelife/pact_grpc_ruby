@@ -13,7 +13,7 @@ module PactGrpcRuby
   LOGGER.level = Logger::INFO
 
   def self.mock_client(service, url = 'localhost:50051', pact_port = 1234)
-    service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
+    service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)])
   end
 
   class PactGrpcInterceptor < GRPC::ClientInterceptor
