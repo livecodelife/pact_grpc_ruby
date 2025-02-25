@@ -16,8 +16,10 @@ module PactGrpcRuby
     server = GRPC::RpcServer.new
     server.add_http2_port(url, :this_port_is_insecure)
     server.handle(service::Service)
-    LOGGER.info("gRPC server started on #{url}")
-    server.run_till_terminated
+    Thread.new do
+      LOGGER.info("gRPC server started on #{url}")
+      server.run_till_terminated_or_interrupted(["TERM", "INT", "EXIT"])
+    end
 
     service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)])
   end
