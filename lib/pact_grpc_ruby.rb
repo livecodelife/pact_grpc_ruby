@@ -22,6 +22,7 @@ module PactGrpcRuby
     end
 
     def request_response(request:, call:, method:, metadata:)
+      LOGGER.info("Pact interaction received: #{{ request: request, call: call, method: method, metadata: metadata }.inspect}")
       # Convert the gRPC request to JSON
       json_request = request.to_h.to_json
 
