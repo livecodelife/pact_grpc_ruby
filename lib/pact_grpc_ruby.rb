@@ -26,24 +26,27 @@ module PactGrpcRuby
       json_request = request.to_h.to_json
 
       # Parse the method to create the URL path
-  method_name = method.split('/').last # Get the action part
-  service_name = method.split('/')[1..-2].join('') # Join the service parts
+      method_name = method.split('/').last # Get the action part
+      service_name = method.split('/')[1..-2].join('') # Join the service parts
 
-  # Format the service name and action for the URL
-  formatted_service_name = service_name.split('.').map(&:capitalize).join # Capitalize each part
-  formatted_action_name = method_name.gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '') # Convert to snake_case
+      # Format the service name and action for the URL
+      formatted_service_name = service_name.split('.').map(&:capitalize).join # Capitalize each part
+      formatted_action_name = method_name.gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '') # Convert to snake_case
 
-  # Construct the HTTP request to send to Pact
-  http_request = Net::HTTP::Post.new("/pact/#{formatted_service_name}/#{formatted_action_name}")
+      # Construct the HTTP request to send to Pact
+      url = "/pact/#{formatted_service_name}/#{formatted_action_name}"
+      http_request = Net::HTTP::Post.new(url)
       http_request.body = json_request
       http_request["Accept"] = "application/json"
       http_request["Content-Type"] = "application/json"
 
       # Send the HTTP request to the Pact server using the dynamic port
-      Net::HTTP.start("localhost", @pact_port) do |http|
+      response = Net::HTTP.start("localhost", @pact_port) do |http|
         http.request(http_request)
       end
 
+      raise StandardError.new("Request to path #{url} failed with response code: #{response.code}") unless response.code == "200"
+      response
     rescue StandardError => e
       LOGGER.error("Error sending Pact interaction: #{e.message}")
       raise
