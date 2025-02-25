@@ -17,7 +17,7 @@ module PactGrpcRuby
     server.add_http2_port(url, :this_port_is_insecure)
     server.handle(service::Service)
     Thread.new do
-      server.run_till_terminated_or_interrupted([Signal::INT, Signal::TERM])
+      server.run_till_terminated_or_interrupted(["EXIT", "TERM", "INT"])
     end
     {
       client: service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)]),
