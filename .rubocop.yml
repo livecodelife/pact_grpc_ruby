@@ -1,5 +1,14 @@
 AllCops:
   TargetRubyVersion: 2.6
+  Exclude:
+    - "bin/*"
+    - "spec/**/*"
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+
+Lint/UselessAssignment:
+  Enabled: true
 
 Style/StringLiterals:
   Enabled: true

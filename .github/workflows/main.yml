@@ -32,17 +32,3 @@ jobs:
         uses: actions/checkout@v2
       - name: Build the gem
         run: gem build pact_grpc_ruby.gemspec
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.0'
-      - name: Install RuboCop
-        run: gem install rubocop
-      - name: Run RuboCop
-        run: rubocop

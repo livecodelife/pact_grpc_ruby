@@ -6,7 +6,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Caleb Cowen"]
   spec.email         = ["calebcowen@gmail.com"]
   spec.summary       = "A Ruby gem for gRPC contract testing using Pact."
-  spec.description   = "Pact gRPC Ruby is a Ruby gem that facilitates contract testing between Ruby-based gRPC services using Pact."
+  spec.description   = "Pact gRPC Ruby is a Ruby gem that facilitates " \
+                       "contract testing between Ruby-based gRPC services using Pact."
   spec.homepage      = "https://github.com/calebcowen/pact_grpc_ruby"
   spec.license       = "MIT"
   spec.files         = Dir["lib/**/*.rb"] + Dir["spec/**/*.rb"] + ["README.md", "LICENSE.txt"]
