@@ -13,6 +13,12 @@ module PactGrpcRuby
   LOGGER.level = Logger::INFO
 
   def self.mock_client(service, url = "localhost:50051", pact_port = 1234)
+    server = GRPC::RpcServer.new
+    server.add_http2_port(url, :this_port_is_insecure)
+    server.handle(service)
+    LOGGER.info("gRPC server started on #{url}")
+    server.run_till_terminated
+
     service::Stub.new(url, :this_channel_is_insecure, interceptors: [PactGrpcInterceptor.new(pact_port)])
   end
 
