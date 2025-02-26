@@ -30,7 +30,7 @@ module PactGrpcRuby
       module_name = service_parts.map(&:camelize).join('_')
       formatted_action_name = method_name.gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
 
-      "/pact/#{module_name}/#{formatted_action_name}?service=#{service_name}&request=#{request.class}"
+      "/pact/#{module_name}/#{formatted_action_name}?service=#{service_name}&request=#{request.class.gsub(/::/, '_')}"
     end
 
     def request_response(request:, call:, method:, metadata:)
