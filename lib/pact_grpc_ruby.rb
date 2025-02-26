@@ -70,7 +70,9 @@ module PactGrpcRuby
         return @app.call(env) # Pass control to the next middleware if the path doesn't match
       end
   
-      grpc_service = path_parts[2].gsub(/([A-Z])/, '_\1').downcase.split('_').map(&:capitalize).join('::') # Extract the gRPC service name
+      service_parts = path_parts[2].split('_')
+      class_name = service_parts.pop
+      grpc_service = service_parts.map(&:capitalize).push(class_name).join('::') # Extract the gRPC service name
       grpc_action = path_parts[3].to_sym # Extract the gRPC action name
   
       # Convert JSON to Proto
