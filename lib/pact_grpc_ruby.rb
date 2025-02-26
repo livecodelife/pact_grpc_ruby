@@ -30,7 +30,7 @@ module PactGrpcRuby
       module_name = service_parts.map(&:camelize).join('_')
       formatted_action_name = method_name.gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
 
-      "/pact/#{module_name}/#{formatted_action_name}?service=#{service_name}&request=#{request.class.gsub(/::/, '_')}"
+      "/pact/#{module_name}/#{formatted_action_name}?service=#{service_name}&request=#{request.class.to_s.split('::').last}")}"
     end
 
     def request_response(request:, call:, method:, metadata:)
@@ -75,7 +75,7 @@ module PactGrpcRuby
       grpc_action = path_parts[3].to_sym # Extract the gRPC action name
   
       # Convert JSON to Proto
-      proto_class = Object.const_get("#{grpc_module}::#{request.params["request"].to_s.gsub(/_/, '::')}") # Get the service class dynamically
+      proto_class = Object.const_get("#{grpc_module}::#{request.params["request"].to_s}") # Get the service class dynamically
       proto_request = proto_class.decode_json(request.body.read) # Decode the JSON request
   
       # Invoke the gRPC call
