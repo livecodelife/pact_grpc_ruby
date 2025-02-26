@@ -21,24 +21,24 @@ module PactGrpcRuby
       @pact_port = pact_port
     end
 
-    def request_response(request:, call:, method:, metadata:)
-      # Convert the gRPC request to JSON
-      json_request = request.to_h.to_json
-
-      # Parse the method to create the URL path
+    def create_pact_path(method)
       method_name = method.split('/').last # Get the action part
       service_name = method.split('/')[1..-2].join('') # Join the service parts
 
       # Format the service name and action for the URL
-      parts = service_name.split('.')
-      last_part = parts.pop # Remove and store the last part
-      parts.map!(&:capitalize) # Capitalize all other parts
-      formatted_service_name = "#{parts.join}_#{last_part}"
-      formatted_action_name = method_name.gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '') # Convert to snake_case
+
+      formatted_service_name = service_name.split('.').map(&:camelize).join('_')
+      formatted_action_name = method_name.gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
+
+      "/pact/#{formatted_service_name}/#{formatted_action_name}"
+    end
+
+    def request_response(request:, call:, method:, metadata:)
+      # Convert the gRPC request to JSON
+      json_request = request.to_h.to_json
 
       # Construct the HTTP request to send to Pact
-      url = "/pact/#{formatted_service_name}/#{formatted_action_name}"
-      http_request = Net::HTTP::Post.new(url)
+      http_request = Net::HTTP::Post.new(create_pact_path(method))
       http_request.body = json_request
       http_request["Accept"] = "application/json"
       http_request["Content-Type"] = "application/json"
@@ -70,9 +70,7 @@ module PactGrpcRuby
         return @app.call(env) # Pass control to the next middleware if the path doesn't match
       end
   
-      service_parts = path_parts[2].split('_')
-      class_name = service_parts.pop
-      grpc_service = service_parts.map(&:capitalize).push(class_name).join('::') # Extract the gRPC service name
+      grpc_service = path_parts[2].gsub('_', '::') # Extract the gRPC service name
       grpc_action = path_parts[3].to_sym # Extract the gRPC action name
   
       # Convert JSON to Proto
@@ -84,7 +82,7 @@ module PactGrpcRuby
       response = grpc_stub.send(grpc_action, proto_request) # Call the appropriate gRPC action
   
       # Serialize the gRPC response into JSON
-      [200, { "Content-Type" => "application/json" }, [response.to_json]]
+      [200, { "Content-Type" => "application/json" }, [response.to_h.to_json]]
     rescue StandardError => e
       LOGGER.error("Error processing request for #{grpc_action}: #{e.message}")
       [500, { "Content-Type" => "application/json" }, [{ error: e.message }.to_json]]
