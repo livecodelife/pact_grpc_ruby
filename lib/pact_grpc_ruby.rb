@@ -39,7 +39,7 @@ module PactGrpcRuby
 
       # Construct the HTTP request to send to Pact
       url = create_pact_path(request,method)
-      http_request = Net::HTTP::Post.new()
+      http_request = Net::HTTP::Post.new(url)
       http_request.body = json_request
       http_request["Accept"] = "application/json"
       http_request["Content-Type"] = "application/json"
