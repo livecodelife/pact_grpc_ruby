@@ -21,16 +21,16 @@ module PactGrpcRuby
       @pact_port = pact_port
     end
 
-    def create_pact_path(method)
+    def create_pact_path(request, method)
       method_name = method.split('/').last # Get the action part
-      service_name = method.split('/')[1..-2].join('') # Join the service parts
+      service_parts = method.split('/')[1..-2].join('').split('.') # Join the service parts
 
       # Format the service name and action for the URL
-
-      formatted_service_name = service_name.split('.').map(&:camelize).join('_')
+      service_name = service_parts.pop
+      module_name = service_parts.map(&:camelize).join('_')
       formatted_action_name = method_name.gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
 
-      "/pact/#{formatted_service_name}/#{formatted_action_name}"
+      "/pact/#{module_name}/#{formatted_action_name}?service=#{service_name}&request=#{request.class}"
     end
 
     def request_response(request:, call:, method:, metadata:)
@@ -38,7 +38,7 @@ module PactGrpcRuby
       json_request = request.to_h.to_json
 
       # Construct the HTTP request to send to Pact
-      http_request = Net::HTTP::Post.new(create_pact_path(method))
+      http_request = Net::HTTP::Post.new(create_pact_path(request,method))
       http_request.body = json_request
       http_request["Accept"] = "application/json"
       http_request["Content-Type"] = "application/json"
@@ -66,19 +66,19 @@ module PactGrpcRuby
       path_parts = request.path_info.split("/")
       
       # Ensure the path matches the expected format
-      if path_parts.length != 4 || path_parts[1] != "pact"
+      if path_parts[1] != "pact"
         return @app.call(env) # Pass control to the next middleware if the path doesn't match
       end
   
-      grpc_service = path_parts[2].gsub('_', '::') # Extract the gRPC service name
+      grpc_module = path_parts[2] # Extract the gRPC service name
       grpc_action = path_parts[3].to_sym # Extract the gRPC action name
   
       # Convert JSON to Proto
-      proto_class = Object.const_get(grpc_service) # Get the service class dynamically
+      proto_class = Object.const_get("#{grpc_module}::#{request.params["request"]}") # Get the service class dynamically
       proto_request = proto_class.decode_json(request.body.read) # Decode the JSON request
   
       # Invoke the gRPC call
-      grpc_stub = "#{grpc_service}::Stub".constantize.new("localhost:50051", :this_channel_is_insecure) # Create the gRPC stub
+      grpc_stub = "#{grpc_module}::#{request.params["service"]}::Stub".constantize.new("localhost:50051", :this_channel_is_insecure) # Create the gRPC stub
       response = grpc_stub.send(grpc_action, proto_request) # Call the appropriate gRPC action
   
       # Serialize the gRPC response into JSON
