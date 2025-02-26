@@ -71,7 +71,7 @@ module PactGrpcRuby
         return @app.call(env) # Pass control to the next middleware if the path doesn't match
       end
   
-      grpc_module = path_parts[2] # Extract the gRPC service name
+      grpc_module = path_parts[2].gsub('_', '::') # Extract the gRPC service name
       grpc_action = path_parts[3].to_sym # Extract the gRPC action name
   
       # Convert JSON to Proto
@@ -79,7 +79,7 @@ module PactGrpcRuby
       proto_request = proto_class.decode_json(request.body.read) # Decode the JSON request
   
       # Invoke the gRPC call
-      grpc_stub = "#{grpc_module.gsub('_', '::')}::#{request.params["service"]}::Stub".constantize.new("localhost:50051", :this_channel_is_insecure) # Create the gRPC stub
+      grpc_stub = "#{grpc_module}::#{request.params["service"]}::Stub".constantize.new("localhost:50051", :this_channel_is_insecure) # Create the gRPC stub
       response = grpc_stub.send(grpc_action, proto_request) # Call the appropriate gRPC action
   
       # Serialize the gRPC response into JSON
