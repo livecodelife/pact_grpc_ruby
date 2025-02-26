@@ -30,7 +30,7 @@ module PactGrpcRuby
       module_name = service_parts.map(&:camelize).join('_')
       formatted_action_name = method_name.gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '')
 
-      "/pact/#{module_name}/#{formatted_action_name}?service=#{service_name}&request=#{request.class.to_s.split('::').last})"
+      "/pact/#{module_name}/#{formatted_action_name}?service=#{service_name}&request=#{request.class.to_s.split('::').last}"
     end
 
     def request_response(request:, call:, method:, metadata:)
@@ -79,7 +79,7 @@ module PactGrpcRuby
       proto_request = proto_class.decode_json(request.body.read) # Decode the JSON request
   
       # Invoke the gRPC call
-      grpc_stub = "#{grpc_module}::#{request.params["service"]}::Stub".constantize.new("localhost:50051", :this_channel_is_insecure) # Create the gRPC stub
+      grpc_stub = "#{grpc_module.gsub('_', '::')}::#{request.params["service"]}::Stub".constantize.new("localhost:50051", :this_channel_is_insecure) # Create the gRPC stub
       response = grpc_stub.send(grpc_action, proto_request) # Call the appropriate gRPC action
   
       # Serialize the gRPC response into JSON
