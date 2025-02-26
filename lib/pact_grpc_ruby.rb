@@ -33,8 +33,7 @@ module PactGrpcRuby
       parts = service_name.split('.')
       last_part = parts.pop # Remove and store the last part
       parts.map!(&:capitalize) # Capitalize all other parts
-      (parts << last_part).join # Join the parts back together
-      formatted_service_name = parts
+      formatted_service_name = (parts << last_part).join
       formatted_action_name = method_name.gsub(/([A-Z])/, '_\1').downcase.sub(/^_/, '') # Convert to snake_case
 
       # Construct the HTTP request to send to Pact
