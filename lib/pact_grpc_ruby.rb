@@ -35,7 +35,7 @@ module PactGrpcRuby
 
     def request_response(request:, call:, method:, metadata:)
       # Convert the gRPC request to JSON
-      json_request = request.to_h.to_json
+      json_request = request.to_json
 
       # Construct the HTTP request to send to Pact
       url = create_pact_path(request,method)
