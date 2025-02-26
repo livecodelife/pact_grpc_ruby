@@ -75,7 +75,7 @@ module PactGrpcRuby
       grpc_action = path_parts[3].to_sym # Extract the gRPC action name
   
       # Convert JSON to Proto
-      proto_class = Object.const_get("#{grpc_module}::#{request.params["request"]}") # Get the service class dynamically
+      proto_class = Object.const_get("#{grpc_module}::#{request.params["request"].gsub(/_/, '::')}") # Get the service class dynamically
       proto_request = proto_class.decode_json(request.body.read) # Decode the JSON request
   
       # Invoke the gRPC call
