@@ -78,18 +78,17 @@ module PactGrpcRuby
       service_class = "#{grpc_module}::#{request.params['service']}".constantize
       
       proto_request = request_class.decode_json(request.body.read)
-      mock_request = OpenStruct.new(
+      
+      controller = find_controller_for_service(service_class).new(
         service: service_class,
         method_key: method_name,
         rpc_desc: service_class::Service.rpc_descs[method_name],
         active_call: nil,
         message: proto_request
       )
-      
-      controller = find_controller_for_service(service_class).new
-      response = controller.send(method_name, mock_request)
+      response = controller.send(method_name)
   
-      [200, { "Content-Type" => "application/json" }, [response.to_h.to_json]]
+      [200, { "Content-Type" => "application/json" }, [response.to_json]]
     rescue StandardError => e
       [500, { "Content-Type" => "application/json" }, [{ error: e.message }.to_json]]
     end
