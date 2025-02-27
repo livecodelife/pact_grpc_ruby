@@ -45,48 +45,76 @@ module PactGrpcRuby
       http_request["Content-Type"] = "application/json"
 
       # Send the HTTP request to the Pact server using the dynamic port
-      response = Net::HTTP.start("localhost", @pact_port) do |http|
+      Net::HTTP.start("localhost", @pact_port) do |http|
         http.request(http_request)
       end
-
-      raise StandardError.new("Request to path #{url} failed with response code: #{response.code}") unless response.code == "200"
-      response
     rescue StandardError => e
       LOGGER.error("Error sending Pact interaction: #{e.message}")
       raise
     end
   end
 
-  class PactGrpcMiddleware
-    def initialize(app, _options = {})
+  class Middleware
+    def initialize(app, options = {})
       @app = app
+      @discovery_strategy = options[:discovery_strategy] || :convention
+      @service_mappings = {}
+    end
+  
+    def register_service(service_class, controller_class)
+      @service_mappings[service_class.name] = controller_class
     end
   
     def call(env)
       request = Rack::Request.new(env)
       path_parts = request.path_info.split("/")
       
-      # Ensure the path matches the expected format
-      if path_parts[1] != "pact"
-        return @app.call(env) # Pass control to the next middleware if the path doesn't match
-      end
+      return @app.call(env) if path_parts[1] != "pact"
   
-      grpc_module = path_parts[2].gsub('_', '::') # Extract the gRPC service name
-      grpc_action = path_parts[3].to_sym # Extract the gRPC action name
+      grpc_module = path_parts[2].gsub('_', '::')
+      method_name = path_parts[3].to_sym
   
-      # Convert JSON to Proto
-      proto_class = Object.const_get("#{grpc_module}::#{request.params["request"].to_s}") # Get the service class dynamically
-      proto_request = proto_class.decode_json(request.body.read) # Decode the JSON request
+      request_class = "#{grpc_module}::#{request.params['request']}".constantize
+      service_class = "#{grpc_module}::#{request.params['service']}".constantize
+      
+      proto_request = request_class.decode_json(request.body.read)
+      mock_request = OpenStruct.new(message: proto_request)
+      
+      controller = find_controller_for_service(service_class).new
+      response = controller.send(method_name, mock_request)
   
-      # Invoke the gRPC call
-      grpc_stub = "#{grpc_module}::#{request.params["service"]}::Stub".constantize.new("localhost:50051", :this_channel_is_insecure) # Create the gRPC stub
-      response = grpc_stub.send(grpc_action, proto_request) # Call the appropriate gRPC action
-  
-      # Serialize the gRPC response into JSON
       [200, { "Content-Type" => "application/json" }, [response.to_h.to_json]]
     rescue StandardError => e
-      LOGGER.error("Error processing request for #{grpc_action}: #{e.message}")
       [500, { "Content-Type" => "application/json" }, [{ error: e.message }.to_json]]
+    end
+  
+    private
+  
+    def find_controller_for_service(service_class)
+      case @discovery_strategy
+      when :convention
+        find_by_convention(service_class)
+      when :config
+        find_by_config(service_class)
+      when :reflection
+        find_by_reflection(service_class)
+      end
+    end
+  
+    def find_by_convention(service_class)
+      service_name = service_class.name.split('::').last
+      base_name = service_name.sub(/Service$/, '')
+      "#{base_name}Controller".constantize
+    end
+  
+    def find_by_config(service_class)
+      @service_mappings[service_class.name] || raise("No controller registered for service: #{service_class.name}")
+    end
+  
+    def find_by_reflection(service_class)
+      ObjectSpace.each_object(Class).find do |klass|
+        klass.instance_methods.include?(service_class.instance_methods.first)
+      end
     end
   end
 end
