@@ -78,7 +78,13 @@ module PactGrpcRuby
       service_class = "#{grpc_module}::#{request.params['service']}".constantize
       
       proto_request = request_class.decode_json(request.body.read)
-      mock_request = OpenStruct.new(message: proto_request)
+      mock_request = OpenStruct.new(
+        service: service_class,
+        method_key: method_name,
+        rpc_desc: service_class::Service.rpc_descs[method_name],
+        active_call: nil,
+        message: proto_request
+      )
       
       controller = find_controller_for_service(service_class).new
       response = controller.send(method_name, mock_request)
